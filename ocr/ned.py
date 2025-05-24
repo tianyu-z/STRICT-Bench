@@ -28,19 +28,19 @@ def ned(reference: str, generation: str) -> float:
 
     len_p = 0
     for tag, i1, i2, j1, j2 in opcodes:
-        if tag == "insert":
-            len_p += j2 - j1
-        elif tag == "delete":
-            len_p += i2 - i1
-        elif tag == "replace":
-
-            len_p += i2 - i1
-        elif tag == "equal":
-
-            len_p += i2 - i1
+        if tag == 'insert':
+            len_p += (j2 - j1)  # Number of characters inserted
+        elif tag == 'delete':
+            len_p += (i2 - i1)  # Number of characters deleted
+        elif tag == 'replace':
+            # Number of characters replaced (each is one 'c' op)
+            len_p += (i2 - i1)
+        elif tag == 'equal':
+            # Number of characters matched (each is one 'n' op)
+            len_p += (i2 - i1)
 
     if len_p == 0:
-        if wgt_p == 0:
+        if wgt_p == 0:  # Both strings are empty
             return 0.0
         else:
             return 0.0
@@ -49,8 +49,8 @@ def ned(reference: str, generation: str) -> float:
 
 
 if __name__ == "__main__":
-    print(ned("hello world", "hello worl"))
-    print(ned("hello world", "hello world"))
-    print(ned("sdf", "aafefjoijqannznxkcjnvkjnjkiahdsiwufhoj"))
-    print(ned("aafefjoijqannznxkcjnvkjnjkiahdsiwufhoj", "sdf"))
-    print(ned("a", "bbbb"))
+    print(ned("hello world", "hello worl"))  # Example usage
+    print(ned("hello world", "hello world"))  # Example usage
+    print(ned('sdf', 'aafefjoijqannznxkcjnvkjnjkiahdsiwufhoj'))
+    print(ned('aafefjoijqannznxkcjnvkjnjkiahdsiwufhoj', 'sdf'))
+    print(ned('a', 'bbbb'))

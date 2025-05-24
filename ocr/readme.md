@@ -1,4 +1,4 @@
-# STRICT: Stress-Test of Rendering Image Containing Text
+# Visual-Text OCR Verification Benchmark
 
 ## Incentive
 
@@ -6,14 +6,13 @@ As Image Generation Models ([ChatGPT-4o](https://openai.com/index/introducing-4o
 
 We understand that directly generating perfect, complex documents via image generation might not yet be the primary use case. However, this benchmark serves as a valuable stress test to answer questions like:
 
-  * How accurately can the model render specific sequences of words?
-  * Does accuracy degrade as the amount of text increases?
-  * How well does the generated text layout survive OCR?
+* How accurately can the model render specific sequences of words?
+* Does accuracy degrade as the amount of text increases?
+* How well does the generated text layout survive OCR?
 
 **Generated Sample (from original README, illustrating the task):**
 
 *Input Text (Ground Truth):*
-
 ```text
 Machine learning (ML) is a field of study in artificial intelligence concerned with the development and study of statistical algorithms that can learn from data and generalise to unseen data, and thus perform tasks without explicit instructions. Within a subdiscipline in machine learning, advances in the field of deep learning have allowed neural networks, a class of statistical algorithms, to surpass many previous machine learning approaches in performance.
 
@@ -22,11 +21,11 @@ ML finds application in many fields, including natural language processing, comp
 Statistics and mathematical optimisation (mathematical programming) methods comprise the foundations of machine learning. Data mining is a related field of study, focusing on exploratory data analysis (EDA) via unsupervised learning.
 
 From a theoretical viewpoint, probably approximately correct learning provides a framework for describing machine learning.
-```
+````
+
+![Example Generated Image (Conceptual):](text.png)
 
 *(Image credit/source: ChatGPT-4o. 04/19/2025)*
-
------
 
 ## Tool Overview
 
@@ -38,14 +37,13 @@ The process is as follows:
 2.  **OCR:** Tesseract OCR is used to extract the text content from each generated image, using specified language models and page segmentation mode.
 3.  **Preprocessing:** Both the ground truth text and the OCR output are normalized (whitespace handling). Users can control whether to convert text to lowercase and remove punctuation via command-line flags before comparison.
 4.  **Comparison:** The (optionally preprocessed) OCR text is compared against the (optionally preprocessed) ground truth text using **order-preserving metrics**:
+      * **Strict Sequence Similarity (Full & Truncated):** Measures the similarity ratio based on `difflib.SequenceMatcher`. Higher is better. The "Truncated" version likely adapts the comparison based on the shorter sequence length.
       * **Strict Word Error Rate (WER) (Full & Truncated):** Calculates the minimum word insertions, deletions, and substitutions needed to transform the OCR text into the ground truth, normalized by ground truth length (for Full). Lower is better. Standard in speech recognition and OCR evaluation.
       * **Strict Character Error Rate (CER) (Full & Truncated):** Similar to WER, but operates at the character level. More sensitive to small OCR errors. Lower is better.
       * **Strict Normalized Edit Distance (NED) (Full & Truncated):** Measures the Levenshtein distance normalized by the length of the optimal edit path (including matches, insertions, deletions, and substitutions). Lower is better (0.0 for identical strings, up to 1.0).
 5.  **Output:** Detailed results for each text-image pair and aggregate statistics (mean, standard deviation, bootstrapped confidence intervals) for each metric across the entire dataset are saved to a JSON file. A summary is also printed to the console.
 
 This approach ensures that the *order* of words is considered crucial ("I am a student" is correctly evaluated as different from "a student am I").
-
------
 
 ## Prerequisites
 
@@ -64,19 +62,15 @@ This approach ensures that the *order* of words is considered crucial ("I am a s
       * `jiwer`: For efficient WER and CER calculation.
       * `python-Levenshtein`: For calculating Normalized Edit Distance (NED).
 
------
-
 ## File Structure
 
 You need three Python files, typically in the same directory:
 
-1.  `core.py`: Contains the core function (`evaluate_document_image`) for OCR, text processing, and metric calculation for a single pair.
+1.  `core.py`: Contains the core function (`evaluate_document_image`) for OCR, text processing, and metric calculation for a single pair. (Assumed to exist).
 2.  `main.py`: The main script to run the evaluation across multiple text/image pairs, handle file discovery, calculate aggregate statistics, and manage command-line arguments.
 3.  `ned.py`: Contains the function to calculate Normalized Edit Distance.
 
 You also need your evaluation data (ground truth text and generated images).
-
------
 
 ## Input Data Format
 
@@ -111,8 +105,6 @@ The script (`main.py`) can find text-image pairs in two ways:
           }
         ]
         ```
-
------
 
 ## How to Run
 
@@ -162,8 +154,6 @@ python main.py --input_path <path_to_data_or_json>
 **Console Output:**
 After processing all pairs, the script prints a summary of the aggregate statistics to the console, similar to the `aggregate_statistics` section in the output JSON file.
 
------
-
 ## Output
 
 The script generates a JSON file (e.g., `evaluation_results.json`) with the following structure:
@@ -172,13 +162,15 @@ The script generates a JSON file (e.g., `evaluation_results.json`) with the foll
 {
   "evaluation_config": {
     "ocr_language": "eng",
-    "ocr_psm": 3
+    "ocr_psm": 3,
   },
   "individual_results": [
     {
       "text_file": "data/doc1.txt",
       "image_file": "data/doc1.png",
       "status": "Success", // or "OCR_EMPTY", "OCR_FAILED", "EVALUATION_ERROR"
+      "strict_sequence_similarity (Full)": 0.985,
+      "strict_sequence_similarity (Truncated)": 0.987,
       "strict_wer (Full)": 0.021,
       "strict_wer (Truncated)": 0.020,
       "strict_cer (Full)": 0.008,
@@ -188,13 +180,15 @@ The script generates a JSON file (e.g., `evaluation_results.json`) with the foll
       "ground_truth_len_raw_chars": 512,
       "ocr_text_len_raw_chars": 509,    // Null if OCR failed critically
       "ground_truth_tokens": 95,
-      "ocr_tokens": 94                  // Null if OCR failed critically
+      "ocr_tokens": 94              // Null if OCR failed critically
     },
     // ... more pairs, potentially with different statuses or null metrics on failure
     {
       "text_file": "data/doc_fail.txt",
       "image_file": "data/doc_fail.png",
       "status": "OCR_FAILED",
+      "strict_sequence_similarity (Full)": null,
+      "strict_sequence_similarity (Truncated)": null,
       "strict_wer (Full)": null,
       "strict_wer (Truncated)": null,
       "strict_cer (Full)": null,
@@ -203,18 +197,30 @@ The script generates a JSON file (e.g., `evaluation_results.json`) with the foll
       "strict_ned (Truncated)": null,
       "ground_truth_len_raw_chars": null, // Or the length read from file
       "ocr_text_len_raw_chars": null,
-      "ground_truth_tokens": null,       // Or the count from file
+      "ground_truth_tokens": null,      // Or the count from file
       "ocr_tokens": null
     }
   ],
   "aggregate_statistics": {
     "total_pairs_processed": 50,
-    "successful_evaluations": 48,      // Count where core eval ran (incl. OCR_EMPTY)
-    "failed_evaluations": 2,           // Count of OCR_FAILED or EVALUATION_ERROR
-    "total_ground_truth_chars": 25600, // Sum from successfully read GT files
-    "total_ground_truth_tokens": 4800, // Sum from successfully read GT files
-    "total_ocr_chars": 25480,          // Sum from successful OCR runs (non-null OCR text)
-    "total_ocr_tokens": 4750,          // Sum from successful OCR runs (non-null OCR text)
+    "successful_evaluations": 48,       // Count where core eval ran (incl. OCR_EMPTY)
+    "failed_evaluations": 2,            // Count of OCR_FAILED or EVALUATION_ERROR
+    "total_ground_truth_chars": 25600,  // Sum from successfully read GT files
+    "total_ground_truth_tokens": 4800,  // Sum from successfully read GT files
+    "total_ocr_chars": 25480,           // Sum from successful OCR runs (non-null OCR text)
+    "total_ocr_tokens": 4750,           // Sum from successful OCR runs (non-null OCR text)
+    "strict_sequence_similarity (Full)": {
+      "mean": 0.9721,
+      "std_dev": 0.0153,
+      "ci_lower": 0.9680,
+      "ci_upper": 0.9762
+    },
+    "strict_sequence_similarity (Truncated)": {
+      "mean": 0.9755,
+      "std_dev": 0.0148,
+      "ci_lower": 0.9711,
+      "ci_upper": 0.9790
+    },
     "strict_wer (Full)": {
       "mean": 0.0352,
       "std_dev": 0.0181,
@@ -259,13 +265,14 @@ The script generates a JSON file (e.g., `evaluation_results.json`) with the foll
   * **`individual_results`**: A list containing detailed metrics for each processed pair. `status` indicates if OCR succeeded (`Success`), returned empty text (`OCR_EMPTY`), failed critically (`OCR_FAILED`), or if an error occurred during the evaluation process (`EVALUATION_ERROR`). Metrics might be `null` if evaluation couldn't complete. Includes character and token counts for both ground truth and OCR output.
   * **`aggregate_statistics`**: Summary statistics calculated across all pairs where the core evaluation function ran successfully (i.e., status is `Success` or `OCR_EMPTY`). Includes total counts and bootstrapped mean, standard deviation (`std_dev`), and 95% confidence intervals (`ci_lower`, `ci_upper`) for each core metric (both Full and Truncated versions).
 
------
-
 ## Interpreting Results
 
+  * **Sequence Similarity (Full / Truncated):** Ranges from 0.0 (no match) to 1.0 (perfect match). Higher is better. Based on `difflib`, sensitive to sequence changes. The "Truncated" version might adjust the comparison length.
   * **Word Error Rate (WER) (Full / Truncated):** Ranges from 0.0 (perfect match) upwards. Lower is better. Represents the percentage of words that need to be changed (substituted, inserted, deleted) to match the ground truth. A WER of 0.1 means 10% of words were incorrect relative to the ground truth length (for Full WER).
   * **Character Error Rate (CER) (Full / Truncated):** Ranges from 0.0 (perfect match) upwards. Lower is better. Similar to WER but at the character level. Useful for measuring fine-grained accuracy. A CER of 0.05 means 5% of characters were incorrect relative to the ground truth length (for Full CER).
   * **Normalized Edit Distance (NED) (Full / Truncated):** Ranges from 0.0 (perfect match) to 1.0. Lower is better. This metric calculates the Levenshtein (edit) distance between the ground truth and OCR output, and then normalizes it by the total number of operations (matches, substitutions, insertions, deletions) in the optimal alignment path. It provides a measure of dissimilarity that accounts for the overall complexity of transforming one string into another.
   * **Counts:** `total_ground_truth_chars/tokens` and `total_ocr_chars/tokens` give an idea of the volume of text processed and how much text the OCR successfully extracted across the dataset.
   * **Status:** Check individual results for `status` flags to understand specific failures (e.g., `OCR_FAILED` vs. `OCR_EMPTY`). Aggregate stats exclude pairs with `OCR_FAILED` or `EVALUATION_ERROR`.
   * **Confidence Intervals (CI):** The 95% CI [ci\_lower, ci\_upper] gives a range within which the true mean of the metric is likely to fall. Narrower intervals indicate more certainty, often seen with larger datasets or less variance.
+
+Consider the `evaluation_config` when comparing results from different runs, as OCR settings (`lang`, `psm`) and preprocessing choices (`--no-lowercase`, `--keep-punctuation`) significantly impact the metrics. The aggregate statistics provide an overall measure of the generator's text rendering quality across your test set under the chosen configuration.
