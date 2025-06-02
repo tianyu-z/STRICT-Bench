@@ -4,6 +4,14 @@
 
 This project is designed to generate images containing text using various state-of-the-art image generation models and then evaluate the accuracy of the generated text using Optical Character Recognition (OCR). The main script, `main.py`, orchestrates the image generation process based on input text data and subsequently triggers an OCR evaluation pipeline to assess how well the models render text in images.
 
+*Input Text (Ground Truth):*
+
+```text
+Asia (, ) is the largest continent in the world by both land area and population. It covers an area of more than 44 million square kilometres, about 30% of Earth's total land area and 8% of Earth's total surface area. The continent, which has long been home to the majority of the human population, was the site of many of the first civilisations. Its 4.7 billion people constitute roughly 60% of the world's population.
+```
+
+The generated images are
+
 ![image](https://github.com/tianyu-z/STRICT-Bench/blob/main/Figure.png)
 
 ## Project Overview
