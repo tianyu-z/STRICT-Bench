@@ -1,4 +1,6 @@
-# Text-to-Image Generation and OCR Evaluation Pipeline
+# STRICT-BENCH
+[![Paper](https://img.shields.io/badge/Paper-000000.svg?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2505.18985) 
+
 
 This project is designed to generate images containing text using various state-of-the-art image generation models and then evaluate the accuracy of the generated text using Optical Character Recognition (OCR). The main script, `main.py`, orchestrates the image generation process based on input text data and subsequently triggers an OCR evaluation pipeline to assess how well the models render text in images.
 
