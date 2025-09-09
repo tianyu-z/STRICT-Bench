@@ -1,6 +1,9 @@
 # STRICT: Stress Test of Rendering Images Containing Text
 [![Paper](https://img.shields.io/badge/Paper-000000.svg?style=for-the-badge&logo=arxiv&logoColor=white)](https://arxiv.org/abs/2505.18985) 
 
+An overview of the current SOTA-level image-generation model (lower -> better):
+
+![image](https://github.com/tianyu-z/STRICT-Bench/blob/main/heatmap.png)
 
 This project is designed to generate images containing text using various state-of-the-art image generation models and then evaluate the accuracy of the generated text using Optical Character Recognition (OCR). The main script, `main.py`, orchestrates the image generation process based on input text data and subsequently triggers an OCR evaluation pipeline to assess how well the models render text in images.
 
@@ -13,6 +16,8 @@ Asia (, ) is the largest continent in the world by both land area and population
 The generated images are
 
 ![image](https://github.com/tianyu-z/STRICT-Bench/blob/main/Figure.png)
+
+
 
 ## Project Overview
 
